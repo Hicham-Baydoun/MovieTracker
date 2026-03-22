@@ -54,7 +54,7 @@ export const movies: Movie[] = [
     director: 'Christopher Nolan',
     cast: ['Matthew McConaughey', 'Anne Hathaway'],
     synopsis: 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
-    poster: '/assets/images/movie1.jpg',
+    poster: 'assets/images/movie1.jpg',
     type: 'movie'
   },
   {
@@ -67,7 +67,7 @@ export const movies: Movie[] = [
     director: 'David Fincher',
     cast: ['Brad Pitt', 'Morgan Freeman'],
     synopsis: 'Two detectives hunt a serial killer who uses the seven deadly sins as his motives.',
-    poster: '/assets/images/movie2.jpg',
+    poster: 'assets/images/movie2.jpg',
     type: 'movie'
   },
   {
@@ -80,7 +80,7 @@ export const movies: Movie[] = [
     director: 'Richard Curtis',
     cast: ['Emma Stone', 'Ryan Gosling'],
     synopsis: 'Two strangers meet in Paris and fall in love over a magical weekend.',
-    poster: '/assets/images/movie3.jpg',
+    poster: 'assets/images/movie3.jpg',
     type: 'movie'
   },
   {
@@ -93,7 +93,7 @@ export const movies: Movie[] = [
     director: 'Ang Lee',
     cast: ['Jet Li', 'Michelle Yeoh'],
     synopsis: 'A young warrior must master ancient martial arts to save his village from an evil warlord.',
-    poster: '/assets/images/movie4.jpg',
+    poster: 'assets/images/movie4.jpg',
     type: 'movie'
   },
   {
@@ -106,7 +106,7 @@ export const movies: Movie[] = [
     director: 'Wes Anderson',
     cast: ['Bill Murray', 'Scarlett Johansson'],
     synopsis: 'A retired comedian returns to the stage for one final performance.',
-    poster: '/assets/images/movie5.jpg',
+    poster: 'assets/images/movie5.jpg',
     type: 'movie'
   }
 ];
@@ -123,7 +123,7 @@ export const tvShows: TVShow[] = [
     creator: 'The Duffer Brothers',
     cast: ['Millie Bobby Brown', 'Finn Wolfhard'],
     synopsis: 'When a young boy disappears, his mother and friends must confront terrifying supernatural forces.',
-    poster: '/assets/images/show1.jpg',
+    poster: 'assets/images/show1.jpg',
     type: 'show'
   },
   {
@@ -137,7 +137,7 @@ export const tvShows: TVShow[] = [
     creator: 'George R.R. Martin',
     cast: ['Emilia Clarke', 'Kit Harington'],
     synopsis: 'Noble families fight for control of the Iron Throne in a medieval fantasy world.',
-    poster: '/assets/images/show2.jpg',
+    poster: 'assets/images/show2.jpg',
     type: 'show'
   },
   {
@@ -151,7 +151,7 @@ export const tvShows: TVShow[] = [
     creator: 'Aaron Sorkin',
     cast: ['Michael Fassbender', 'Kate Winslet'],
     synopsis: 'The story of a tech startup that changed the world and the people behind it.',
-    poster: '/assets/images/show3.jpg',
+    poster: 'assets/images/show3.jpg',
     type: 'show'
   },
   {
@@ -165,7 +165,7 @@ export const tvShows: TVShow[] = [
     creator: 'Chuck Lorre',
     cast: ['Jim Parsons', 'Kaley Cuoco'],
     synopsis: 'A group of friends navigate life, love, and careers in New York City.',
-    poster: '/assets/images/show4.jpg',
+    poster: 'assets/images/show4.jpg',
     type: 'show'
   },
   {
@@ -179,7 +179,7 @@ export const tvShows: TVShow[] = [
     creator: 'Mike Flanagan',
     cast: ['Victoria Pedretti', 'Oliver Jackson-Cohen'],
     synopsis: 'A family moves into a haunted mansion with a dark and tragic history.',
-    poster: '/assets/images/show5.jpg',
+    poster: 'assets/images/show5.jpg',
     type: 'show'
   }
 ];
@@ -190,7 +190,7 @@ export const users: User[] = [
     username: 'moviebuff',
     email: 'moviebuff@example.com',
     password: 'password123',
-    avatar: '/assets/images/avatar1.jpg',
+    avatar: 'assets/images/avatar1.jpg',
     watchlist: [1, 101, 3, 102],
     joinedDate: '2024-01-15'
   },
@@ -199,7 +199,7 @@ export const users: User[] = [
     username: 'seriesfan',
     email: 'seriesfan@example.com',
     password: 'password456',
-    avatar: '/assets/images/avatar2.jpg',
+    avatar: 'assets/images/avatar2.jpg',
     watchlist: [2, 103, 4],
     joinedDate: '2024-02-20'
   }
@@ -228,3 +228,4 @@ export const filterByGenre = (genre: string) => {
     item.genre.includes(genre)
   );
 };
+

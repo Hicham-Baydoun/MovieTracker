@@ -266,7 +266,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         username: payload.username.trim(),
         email: payload.email.trim(),
         password: payload.password,
-        avatar: state.users.length % 2 === 0 ? '/assets/images/avatar1.jpg' : '/assets/images/avatar2.jpg',
+        avatar: state.users.length % 2 === 0 ? 'assets/images/avatar1.jpg' : 'assets/images/avatar2.jpg',
         watchlist: [],
         joinedDate: new Date().toISOString().slice(0, 10),
       };
@@ -367,3 +367,4 @@ export function useAppData() {
 }
 
 export type { ContentItem, ContentType, AuthResult };
+

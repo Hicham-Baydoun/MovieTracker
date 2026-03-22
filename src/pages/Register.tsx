@@ -156,7 +156,7 @@ export default function Register() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center space-x-2">
-              <img src="/assets/images/logo.png" alt="MovieTracker" className="h-10 w-10" />
+              <img src="assets/images/logo.png" alt="MovieTracker" className="h-10 w-10" />
               <span className="text-2xl font-bold text-foreground">MovieTracker</span>
             </Link>
           </div>
@@ -364,3 +364,4 @@ export default function Register() {
     </div>
   );
 }
+

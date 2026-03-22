@@ -30,7 +30,7 @@ export default function AddEdit() {
     genre: [] as string[],
     rating: 7.0,
     synopsis: '',
-    poster: '/assets/images/movie1.jpg',
+    poster: 'assets/images/movie1.jpg',
     duration: '',
     director: '',
     cast: [] as string[],
@@ -251,7 +251,7 @@ export default function AddEdit() {
                       variant={contentType === 'movie' ? 'default' : 'outline'}
                       onClick={() => {
                         setContentType('movie');
-                        setFormData((prev) => ({ ...prev, poster: '/assets/images/movie1.jpg' }));
+                        setFormData((prev) => ({ ...prev, poster: 'assets/images/movie1.jpg' }));
                       }}
                       className="flex-1"
                     >
@@ -263,7 +263,7 @@ export default function AddEdit() {
                       variant={contentType === 'show' ? 'default' : 'outline'}
                       onClick={() => {
                         setContentType('show');
-                        setFormData((prev) => ({ ...prev, poster: '/assets/images/show1.jpg' }));
+                        setFormData((prev) => ({ ...prev, poster: 'assets/images/show1.jpg' }));
                       }}
                       className="flex-1"
                     >
@@ -504,3 +504,4 @@ export default function AddEdit() {
     </div>
   );
 }
+
