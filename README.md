@@ -38,7 +38,7 @@ Primary data entities used in the project:
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Hicham-Baydoun/movie-tracker.git
    ```
 2. Move into the project folder:
    ```bash
