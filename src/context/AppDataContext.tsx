@@ -88,6 +88,10 @@ function cloneSeed<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+function normalizeAssetPath(path: string): string {
+  return path.replace(/^\/assets\/images\//, 'assets/images/');
+}
+
 function getDefaultState(): StoredAppData {
   return {
     movies: cloneSeed(seedMovies),
@@ -116,9 +120,18 @@ function readStoredState(): StoredAppData {
     }
 
     return {
-      movies: parsed.movies as Movie[],
-      tvShows: parsed.tvShows as TVShow[],
-      users: parsed.users as User[],
+      movies: (parsed.movies as Movie[]).map((movie) => ({
+        ...movie,
+        poster: normalizeAssetPath(movie.poster),
+      })),
+      tvShows: (parsed.tvShows as TVShow[]).map((show) => ({
+        ...show,
+        poster: normalizeAssetPath(show.poster),
+      })),
+      users: (parsed.users as User[]).map((user) => ({
+        ...user,
+        avatar: normalizeAssetPath(user.avatar),
+      })),
       currentUserId:
         typeof parsed.currentUserId === 'number' || parsed.currentUserId === null
           ? parsed.currentUserId
