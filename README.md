@@ -160,25 +160,3 @@ In the next phase, we plan to integrate a cloud database tool such as **Firebase
 
 A bottom-right **Movie Assistant** button is included in the UI.  
 For now, the chat replies with: **`Under production`**.
-
-## Phase 1 Compliance Notes
-
-Recent frontend updates were implemented to align with the Phase 1 project brief:
-
-1. **Mock CRUD now updates shared app state**
-   - Add/Edit operations now create and update items in shared mock data state.
-
-2. **Register now creates mock user accounts**
-   - New users are appended to the local mock user store after validation.
-
-3. **Login, session, and profile are connected**
-   - Logged-in session state is shared through app context and reflected in the profile page.
-
-4. **Watchlist interactions are synchronized**
-   - Add/remove watchlist actions are now shared across details/profile views and persisted in local storage.
-
-5. **Two distinct detail views are routed**
-   - Separate routes now exist for movie details and TV show details, with shared presentation logic.
-
-6. **Missing linked routes were added**
-   - `/forgot-password`, `/terms`, and `/privacy` pages are now available.
