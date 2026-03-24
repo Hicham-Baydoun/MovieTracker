@@ -21,6 +21,8 @@ import { useAppData } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
 import { getAssetUrl } from '@/lib/assetUrl';
 
+const MAX_GENRE_SELECTIONS = 2;
+
 export default function Browse() {
   const { allContent, genres } = useAppData();
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,10 +30,41 @@ export default function Browse() {
   const [selectedType, setSelectedType] = useState<'all' | 'movie' | 'show'>('all');
   const [showFilters, setShowFilters] = useState(false);
 
+  const availableGenres = useMemo(() => {
+    const seen = new Set<string>();
+    const orderedGenres: string[] = [];
+
+    genres.forEach((genre) => {
+      if (!seen.has(genre)) {
+        seen.add(genre);
+        orderedGenres.push(genre);
+      }
+    });
+
+    allContent.forEach((item) => {
+      item.genre.forEach((genre) => {
+        if (!seen.has(genre)) {
+          seen.add(genre);
+          orderedGenres.push(genre);
+        }
+      });
+    });
+
+    return orderedGenres;
+  }, [allContent, genres]);
+
   const toggleGenre = (genre: string) => {
-    setSelectedGenres((prev) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
-    );
+    setSelectedGenres((prev) => {
+      if (prev.includes(genre)) {
+        return prev.filter((g) => g !== genre);
+      }
+
+      if (prev.length >= MAX_GENRE_SELECTIONS) {
+        return prev;
+      }
+
+      return [...prev, genre];
+    });
   };
 
   const filteredContent = useMemo(() => {
@@ -128,18 +161,22 @@ export default function Browse() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width)">
-                      {genres.map((genre) => (
+                      {availableGenres.map((genre) => (
                         <DropdownMenuCheckboxItem
                           key={genre}
                           checked={selectedGenres.includes(genre)}
                           onCheckedChange={() => toggleGenre(genre)}
                           onSelect={(event) => event.preventDefault()}
+                          disabled={selectedGenres.length >= MAX_GENRE_SELECTIONS && !selectedGenres.includes(genre)}
                         >
                           {genre}
                         </DropdownMenuCheckboxItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Pick up to {MAX_GENRE_SELECTIONS} genres.
+                  </p>
                 </div>
 
                 <div>
