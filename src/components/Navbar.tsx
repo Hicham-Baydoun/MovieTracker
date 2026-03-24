@@ -4,6 +4,7 @@ import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAppData } from '@/context/AppDataContext';
 import { Button } from '@/components/ui/button';
+import { getAssetUrl } from '@/lib/assetUrl';
 
 export default function Navbar() {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -24,7 +25,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
-            <img src="assets/images/logo.png" alt="MovieTracker" className="h-8 w-8" />
+            <img src={getAssetUrl('assets/images/logo.png')} alt="MovieTracker" className="h-8 w-8" />
             <span className="text-xl font-bold text-foreground">MovieTracker</span>
           </Link>
 

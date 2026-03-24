@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAppData } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
+import { getAssetUrl } from '@/lib/assetUrl';
 
 export default function Homepage() {
   const { allContent, movies, tvShows } = useAppData();
@@ -47,7 +48,7 @@ export default function Homepage() {
       <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={popularContent[0]?.poster}
+            src={popularContent[0] ? getAssetUrl(popularContent[0].poster) : ''}
             alt=""
             className="w-full h-full object-cover blur-[60px] scale-150 opacity-60"
           />
@@ -114,7 +115,7 @@ export default function Homepage() {
                   <Link to={getContentDetailsPath(item)}>
                     <div className="relative aspect-[21/9] md:aspect-[3/1] overflow-hidden rounded-xl">
                       <img
-                        src={item.poster}
+                        src={getAssetUrl(item.poster)}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
@@ -171,7 +172,7 @@ export default function Homepage() {
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
                   <div className="aspect-[2/3] overflow-hidden">
                     <img
-                      src={item.poster}
+                      src={getAssetUrl(item.poster)}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -218,7 +219,7 @@ export default function Homepage() {
                   <div className="flex">
                     <div className="w-1/3 aspect-[2/3] overflow-hidden">
                       <img
-                        src={movie.poster}
+                        src={getAssetUrl(movie.poster)}
                         alt={movie.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -257,7 +258,7 @@ export default function Homepage() {
                   <div className="flex">
                     <div className="w-1/3 aspect-[2/3] overflow-hidden">
                       <img
-                        src={show.poster}
+                        src={getAssetUrl(show.poster)}
                         alt={show.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />

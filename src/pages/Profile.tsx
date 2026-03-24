@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAppData } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
+import { getAssetUrl } from '@/lib/assetUrl';
 
 export default function Profile() {
   const { currentUser, getContentById, removeFromWatchlist } = useAppData();
@@ -69,7 +70,7 @@ export default function Profile() {
                 <Card key={item.id} className="overflow-hidden group">
                   <div className="aspect-[2/3] overflow-hidden relative">
                     <img
-                      src={item.poster}
+                      src={getAssetUrl(item.poster)}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

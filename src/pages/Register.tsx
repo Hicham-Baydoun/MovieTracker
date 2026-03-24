@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppData } from '@/context/AppDataContext';
+import { getAssetUrl } from '@/lib/assetUrl';
 
 export default function Register() {
   const { movies, tvShows, users, registerUser } = useAppData();
@@ -156,7 +157,7 @@ export default function Register() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center space-x-2">
-              <img src="assets/images/logo.png" alt="MovieTracker" className="h-10 w-10" />
+              <img src={getAssetUrl('assets/images/logo.png')} alt="MovieTracker" className="h-10 w-10" />
               <span className="text-2xl font-bold text-foreground">MovieTracker</span>
             </Link>
           </div>

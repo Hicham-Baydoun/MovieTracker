@@ -25,7 +25,7 @@ Primary data entities used in the project:
 
 ## Deployed Application Link
 
-[Open the deployed app](https://t4lbo3ymybghm.ok.kimi.link)
+[Open the deployed app](https://hicham-baydoun.github.io/MovieTracker/)
 
 ## Frontend Setup Instructions (Local)
 
@@ -38,7 +38,7 @@ Primary data entities used in the project:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Hicham-Baydoun/movie-tracker.git
+   git clone https://github.com/Hicham-Baydoun/MovieTracker.git
    ```
 2. Move into the project folder:
    ```bash

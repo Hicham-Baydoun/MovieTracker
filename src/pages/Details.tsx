@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAppData, type ContentType } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
+import { getAssetUrl } from '@/lib/assetUrl';
 
 interface DetailsProps {
   requiredType?: ContentType;
@@ -83,7 +84,7 @@ export default function Details({ requiredType }: DetailsProps = {}) {
           <div className="lg:col-span-1">
             <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg">
               <img
-                src={content.poster}
+                src={getAssetUrl(content.poster)}
                 alt={content.title}
                 className="w-full h-full object-cover"
               />
@@ -216,7 +217,7 @@ export default function Details({ requiredType }: DetailsProps = {}) {
                     <div className="flex">
                       <div className="w-1/3 aspect-[2/3] overflow-hidden">
                         <img
-                          src={item.poster}
+                          src={getAssetUrl(item.poster)}
                           alt={item.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

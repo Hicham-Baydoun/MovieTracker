@@ -1,9 +1,15 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Star, X, Film, Tv } from 'lucide-react';
+import { Search, Filter, Star, X, Film, Tv, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -13,13 +19,20 @@ import {
 } from '@/components/ui/select';
 import { useAppData } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
+import { getAssetUrl } from '@/lib/assetUrl';
 
 export default function Browse() {
   const { allContent, genres } = useAppData();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<'all' | 'movie' | 'show'>('all');
   const [showFilters, setShowFilters] = useState(false);
+
+  const toggleGenre = (genre: string) => {
+    setSelectedGenres((prev) =>
+      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+    );
+  };
 
   const filteredContent = useMemo(() => {
     return allContent.filter((item) => {
@@ -28,7 +41,9 @@ export default function Browse() {
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesGenre = selectedGenre === '' || item.genre.includes(selectedGenre);
+      const matchesGenre =
+        selectedGenres.length === 0 ||
+        selectedGenres.some((selectedGenre) => item.genre.includes(selectedGenre));
 
       const matchesType =
         selectedType === 'all' ||
@@ -37,15 +52,21 @@ export default function Browse() {
 
       return matchesSearch && matchesGenre && matchesType;
     });
-  }, [allContent, searchQuery, selectedGenre, selectedType]);
+  }, [allContent, searchQuery, selectedGenres, selectedType]);
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedGenre('');
+    setSelectedGenres([]);
     setSelectedType('all');
   };
 
-  const hasActiveFilters = searchQuery || selectedGenre || selectedType !== 'all';
+  const hasActiveFilters = searchQuery || selectedGenres.length > 0 || selectedType !== 'all';
+  const selectedGenresLabel =
+    selectedGenres.length === 0
+      ? 'All Genres'
+      : selectedGenres.length === 1
+        ? selectedGenres[0]
+        : `${selectedGenres.length} genres selected`;
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -96,19 +117,29 @@ export default function Browse() {
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Genre
                   </label>
-                  <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Genres" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All Genres</SelectItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between font-normal"
+                      >
+                        <span className="truncate">{selectedGenresLabel}</span>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width)">
                       {genres.map((genre) => (
-                        <SelectItem key={genre} value={genre}>
+                        <DropdownMenuCheckboxItem
+                          key={genre}
+                          checked={selectedGenres.includes(genre)}
+                          onCheckedChange={() => toggleGenre(genre)}
+                          onSelect={(event) => event.preventDefault()}
+                        >
                           {genre}
-                        </SelectItem>
+                        </DropdownMenuCheckboxItem>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 <div>
@@ -155,14 +186,17 @@ export default function Browse() {
                   </button>
                 </span>
               )}
-              {selectedGenre && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                  Genre: {selectedGenre}
-                  <button onClick={() => setSelectedGenre('')} className="ml-2">
+              {selectedGenres.map((genre) => (
+                <span
+                  key={genre}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary"
+                >
+                  Genre: {genre}
+                  <button onClick={() => toggleGenre(genre)} className="ml-2">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
-              )}
+              ))}
               {selectedType !== 'all' && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary">
                   Type: {selectedType === 'movie' ? 'Movies' : 'TV Shows'}
@@ -182,7 +216,7 @@ export default function Browse() {
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full">
                   <div className="aspect-[2/3] overflow-hidden relative">
                     <img
-                      src={item.poster}
+                      src={getAssetUrl(item.poster)}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

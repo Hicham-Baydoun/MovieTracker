@@ -89,7 +89,18 @@ function cloneSeed<T>(value: T): T {
 }
 
 function normalizeAssetPath(path: string): string {
-  return path.replace(/^\/assets\/images\//, 'assets/images/');
+  if (!path) {
+    return '';
+  }
+
+  const normalized = path.replace(/\\/g, '/');
+  const assetIndex = normalized.indexOf('assets/images/');
+
+  if (assetIndex >= 0) {
+    return normalized.slice(assetIndex);
+  }
+
+  return normalized.replace(/^\.?\//, '');
 }
 
 function getDefaultState(): StoredAppData {
