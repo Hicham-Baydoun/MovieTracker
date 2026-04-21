@@ -1,9 +1,8 @@
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, Star, X, Film, Tv, ChevronDown } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, Filter, X, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -18,74 +17,65 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAppData } from '@/context/AppDataContext';
-import { getContentDetailsPath } from '@/lib/contentRoutes';
-import { getAssetUrl } from '@/lib/assetUrl';
+import { PosterCard } from '@/components/PosterCard';
 
 const MAX_GENRE_SELECTIONS = 2;
 
 export default function Browse() {
   const { allContent, genres } = useAppData();
+  const [searchParams] = useSearchParams();
+
+  const initialGenre = searchParams.get('genre');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(
+    initialGenre ? [initialGenre] : []
+  );
   const [selectedType, setSelectedType] = useState<'all' | 'movie' | 'show'>('all');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(Boolean(initialGenre));
+
+  // Pre-select genre from URL param when navigating from a Details genre tag.
+  useEffect(() => {
+    const genre = searchParams.get('genre');
+    if (genre) {
+      setSelectedGenres([genre]);
+      setShowFilters(true);
+    }
+  }, [searchParams]);
 
   const availableGenres = useMemo(() => {
     const seen = new Set<string>();
-    const orderedGenres: string[] = [];
-
-    genres.forEach((genre) => {
-      if (!seen.has(genre)) {
-        seen.add(genre);
-        orderedGenres.push(genre);
-      }
-    });
-
-    allContent.forEach((item) => {
-      item.genre.forEach((genre) => {
-        if (!seen.has(genre)) {
-          seen.add(genre);
-          orderedGenres.push(genre);
-        }
-      });
-    });
-
-    return orderedGenres;
+    const result: string[] = [];
+    genres.forEach((g) => { if (!seen.has(g)) { seen.add(g); result.push(g); } });
+    allContent.forEach((item) =>
+      item.genre.forEach((g) => { if (!seen.has(g)) { seen.add(g); result.push(g); } })
+    );
+    return result;
   }, [allContent, genres]);
 
   const toggleGenre = (genre: string) => {
     setSelectedGenres((prev) => {
-      if (prev.includes(genre)) {
-        return prev.filter((g) => g !== genre);
-      }
-
-      if (prev.length >= MAX_GENRE_SELECTIONS) {
-        return prev;
-      }
-
+      if (prev.includes(genre)) return prev.filter((g) => g !== genre);
+      if (prev.length >= MAX_GENRE_SELECTIONS) return prev;
       return [...prev, genre];
     });
   };
 
-  const filteredContent = useMemo(() => {
-    return allContent.filter((item) => {
-      const matchesSearch =
-        searchQuery === '' ||
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesGenre =
-        selectedGenres.length === 0 ||
-        selectedGenres.some((selectedGenre) => item.genre.includes(selectedGenre));
-
-      const matchesType =
-        selectedType === 'all' ||
-        (selectedType === 'movie' && item.type === 'movie') ||
-        (selectedType === 'show' && item.type === 'show');
-
-      return matchesSearch && matchesGenre && matchesType;
-    });
-  }, [allContent, searchQuery, selectedGenres, selectedType]);
+  const filteredContent = useMemo(
+    () =>
+      allContent.filter((item) => {
+        const matchesSearch =
+          !searchQuery || item.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesGenre =
+          selectedGenres.length === 0 ||
+          selectedGenres.some((g) => item.genre.includes(g));
+        const matchesType =
+          selectedType === 'all' ||
+          (selectedType === 'movie' && item.type === 'movie') ||
+          (selectedType === 'show' && item.type === 'show');
+        return matchesSearch && matchesGenre && matchesType;
+      }),
+    [allContent, searchQuery, selectedGenres, selectedType]
+  );
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -94,70 +84,93 @@ export default function Browse() {
   };
 
   const hasActiveFilters = searchQuery || selectedGenres.length > 0 || selectedType !== 'all';
+  const activeFilterCount = [
+    searchQuery ? 1 : 0,
+    selectedGenres.length,
+    selectedType !== 'all' ? 1 : 0,
+  ].reduce((a, b) => a + b, 0);
+
   const selectedGenresLabel =
     selectedGenres.length === 0
       ? 'All Genres'
       : selectedGenres.length === 1
         ? selectedGenres[0]
-        : `${selectedGenres.length} genres selected`;
+        : `${selectedGenres.length} genres`;
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+    <div className="min-h-screen bg-background py-10">
+      <div className="max-w-[1360px] mx-auto px-6 lg:px-10">
+        {/* Page header */}
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Browse Movies & TV Shows
           </h1>
-          <p className="text-muted-foreground">
-            Discover your next favorite movie or TV show from our collection.
+          <p className="text-muted-foreground leading-relaxed">
+            Discover your next favourite from our collection.
           </p>
         </div>
 
+        {/* Search + Filter bar */}
         <div className="mb-8 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
-                placeholder="Search by title or genre..."
+                placeholder="Search by title…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11 bg-background shadow-sm"
+                aria-label="Search movies and TV shows"
               />
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  aria-label="Clear search"
                 >
-                  <X className="h-4 w-4 text-muted-foreground" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
             <Button
-              variant="outline"
+              variant={showFilters ? 'default' : 'outline'}
               onClick={() => setShowFilters(!showFilters)}
-              className="sm:w-auto"
+              className="h-11 sm:w-auto gap-2 shadow-sm cursor-pointer"
+              aria-expanded={showFilters}
+              aria-controls="filter-panel"
             >
-              <Filter className="mr-2 h-4 w-4" />
+              <Filter className="h-4 w-4" />
               Filters
+              {activeFilterCount > 0 && (
+                <span className="ml-0.5 bg-primary-foreground/20 text-xs rounded-full px-1.5 py-0.5 font-semibold tabular-nums">
+                  {activeFilterCount}
+                </span>
+              )}
             </Button>
           </div>
 
           {showFilters && (
-            <div className="p-4 bg-accent/50 rounded-lg space-y-4">
+            <div
+              id="filter-panel"
+              className="p-5 bg-muted/50 border border-border/50 rounded-xl shadow-sm space-y-4"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
+                  <label className="block text-sm font-semibold text-foreground mb-2" htmlFor="genre-btn">
                     Genre
                   </label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
+                        id="genre-btn"
                         variant="outline"
-                        className="w-full justify-between font-normal"
+                        className="w-full justify-between font-normal bg-background cursor-pointer"
+                        aria-label={`Genre filter: ${selectedGenresLabel}`}
                       >
                         <span className="truncate">{selectedGenresLabel}</span>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        <ChevronDown className="h-4 w-4 text-muted-foreground ml-2 flex-shrink-0" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width)">
@@ -166,28 +179,31 @@ export default function Browse() {
                           key={genre}
                           checked={selectedGenres.includes(genre)}
                           onCheckedChange={() => toggleGenre(genre)}
-                          onSelect={(event) => event.preventDefault()}
-                          disabled={selectedGenres.length >= MAX_GENRE_SELECTIONS && !selectedGenres.includes(genre)}
+                          onSelect={(e) => e.preventDefault()}
+                          disabled={
+                            selectedGenres.length >= MAX_GENRE_SELECTIONS &&
+                            !selectedGenres.includes(genre)
+                          }
                         >
                           {genre}
                         </DropdownMenuCheckboxItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-1.5 text-xs text-muted-foreground">
                     Pick up to {MAX_GENRE_SELECTIONS} genres.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
+                  <label className="block text-sm font-semibold text-foreground mb-2" htmlFor="type-select">
                     Content Type
                   </label>
                   <Select
                     value={selectedType}
-                    onValueChange={(value: 'all' | 'movie' | 'show') => setSelectedType(value)}
+                    onValueChange={(v: 'all' | 'movie' | 'show') => setSelectedType(v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="type-select" className="bg-background">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
@@ -200,8 +216,13 @@ export default function Browse() {
               </div>
 
               {hasActiveFilters && (
-                <Button variant="ghost" onClick={clearFilters} className="w-full sm:w-auto">
-                  <X className="mr-2 h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  onClick={clearFilters}
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <X className="mr-1.5 h-3.5 w-3.5" />
                   Clear All Filters
                 </Button>
               )}
@@ -209,109 +230,69 @@ export default function Browse() {
           )}
         </div>
 
-        <div className="mb-6 flex items-center justify-between">
-          <p className="text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{filteredContent.length}</span> results
+        {/* Results count + active filter chips */}
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-bold text-foreground text-base tabular-nums">
+              {filteredContent.length}
+            </span>{' '}
+            results
           </p>
           {hasActiveFilters && (
             <div className="flex flex-wrap gap-2">
               {searchQuery && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                  Search: {searchQuery}
-                  <button onClick={() => setSearchQuery('')} className="ml-2">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
+                <Chip onRemove={() => setSearchQuery('')}>&ldquo;{searchQuery}&rdquo;</Chip>
               )}
-              {selectedGenres.map((genre) => (
-                <span
-                  key={genre}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary"
-                >
-                  Genre: {genre}
-                  <button onClick={() => toggleGenre(genre)} className="ml-2">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
+              {selectedGenres.map((g) => (
+                <Chip key={g} onRemove={() => toggleGenre(g)}>{g}</Chip>
               ))}
               {selectedType !== 'all' && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                  Type: {selectedType === 'movie' ? 'Movies' : 'TV Shows'}
-                  <button onClick={() => setSelectedType('all')} className="ml-2">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
+                <Chip onRemove={() => setSelectedType('all')}>
+                  {selectedType === 'movie' ? 'Movies' : 'TV Shows'}
+                </Chip>
               )}
             </div>
           )}
         </div>
 
+        {/* Grid */}
         {filteredContent.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredContent.map((item) => (
-              <Link key={item.id} to={getContentDetailsPath(item)}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full">
-                  <div className="aspect-[2/3] overflow-hidden relative">
-                    <img
-                      src={getAssetUrl(item.poster)}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-background/90 text-foreground">
-                        {item.type === 'movie' ? (
-                          <Film className="h-3 w-3 mr-1" />
-                        ) : (
-                          <Tv className="h-3 w-3 mr-1" />
-                        )}
-                        {item.type === 'movie' ? 'Movie' : 'TV Show'}
-                      </span>
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-foreground truncate">{item.title}</h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-sm text-muted-foreground">{item.year}</span>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span className="text-sm font-medium">{item.rating}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {item.genre.slice(0, 2).map((g) => (
-                        <span
-                          key={g}
-                          className="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded"
-                        >
-                          {g}
-                        </span>
-                      ))}
-                    </div>
-                    {'duration' in item ? (
-                      <p className="text-sm text-muted-foreground mt-2">{item.duration}</p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {item.seasons} Seasons
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+            {filteredContent.map((item) => (
+              <PosterCard key={item.id} item={item} showHoverInfo />
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <div className="mb-4">
-              <Search className="h-16 w-16 mx-auto text-muted-foreground" />
+          <div className="text-center py-28">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
+              <Search className="h-9 w-9 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">No results found</h3>
-            <p className="text-muted-foreground mb-4">
-              Try adjusting your search or filters to find what you're looking for.
+            <h3 className="text-xl font-bold text-foreground mb-2">No results found</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm mx-auto leading-relaxed">
+              Try adjusting your search or filters to find what you&apos;re looking for.
             </p>
-            <Button onClick={clearFilters}>Clear All Filters</Button>
+            <Button onClick={clearFilters} variant="outline" className="cursor-pointer">
+              Clear All Filters
+            </Button>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function Chip({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-primary/10 text-primary font-medium border border-primary/20">
+      {children}
+      <button
+        type="button"
+        onClick={onRemove}
+        className="ml-1 hover:opacity-70 cursor-pointer"
+        aria-label="Remove filter"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
   );
 }

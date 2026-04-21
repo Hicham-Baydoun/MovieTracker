@@ -1,302 +1,302 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Film, TrendingUp, ChevronRight, ChevronLeft, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Film, TrendingUp } from 'lucide-react';
 import { useAppData } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
 import { getAssetUrl } from '@/lib/assetUrl';
+import { PosterCard } from '@/components/PosterCard';
+import { SectionHeader } from '@/components/SectionHeader';
+import { HeroCarousel } from '@/components/HeroCarousel';
 
 export default function Homepage() {
-  const { allContent, movies, tvShows } = useAppData();
+  const { allContent, movies, tvShows, genres } = useAppData();
 
-  const featuredContent = allContent.slice(0, 4);
-  const topMovies = movies.slice(0, 3);
-  const topShows = tvShows.slice(0, 3);
-  const popularContent = [...movies, ...tvShows].sort((a, b) => b.rating - a.rating).slice(0, 5);
+  const popular = [...allContent].sort((a, b) => b.rating - a.rating).slice(0, 5);
+  const featured = allContent.slice(0, 4);
+  const topMovies = [...movies].sort((a, b) => b.rating - a.rating).slice(0, 8);
+  const topShows = [...tvShows].sort((a, b) => b.rating - a.rating).slice(0, 8);
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    if (popularContent.length === 0) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % popularContent.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [popularContent.length]);
-
-  const nextSlide = () => {
-    if (popularContent.length === 0) {
-      return;
-    }
-    setCurrentSlide((prev) => (prev + 1) % popularContent.length);
-  };
-
-  const prevSlide = () => {
-    if (popularContent.length === 0) {
-      return;
-    }
-    setCurrentSlide((prev) => (prev - 1 + popularContent.length) % popularContent.length);
-  };
+  // Pick 4 posters for the hero grid
+  const heroPosters = popular.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative py-16 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src={popularContent[0] ? getAssetUrl(popularContent[0].poster) : ''}
-            alt=""
-            className="w-full h-full object-cover blur-[60px] scale-150 opacity-60"
-          />
+      {/* ── HERO ─────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden">
+        {/* Ambient blurred backdrops from poster colours */}
+        <div className="absolute inset-0 -z-10 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-1/4 -left-1/4 w-[55vw] h-[55vw] rounded-full opacity-25 blur-[100px] saturate-150">
+            {heroPosters[0] && (
+              <img
+                src={getAssetUrl(heroPosters[0].poster)}
+                className="w-full h-full object-cover rounded-full"
+                alt=""
+              />
+            )}
+          </div>
+          <div className="absolute -bottom-1/4 -right-1/4 w-[55vw] h-[55vw] rounded-full opacity-20 blur-[100px] saturate-150">
+            {heroPosters[1] && (
+              <img
+                src={getAssetUrl(heroPosters[1].poster)}
+                className="w-full h-full object-cover rounded-full"
+                alt=""
+              />
+            )}
+          </div>
           <div className="absolute inset-0 bg-background/70" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Track Your Favorite
-              <span className="text-primary block mt-2">Movies & TV Shows</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Discover, organize, and keep track of all your favorite movies and TV shows in one place.
-              Create your personal watchlist today!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/browse">
-                <Button size="lg" className="w-full sm:w-auto">
-                  <Film className="mr-2 h-5 w-5" />
-                  Browse Movies
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  <TrendingUp className="mr-2 h-5 w-5" />
-                  Get Started
-                </Button>
-              </Link>
+        <div className="max-w-[1360px] mx-auto px-6 lg:px-10 pt-14 pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] items-center gap-12 xl:gap-16">
+            {/* ── Left: Copy ─────────────────────────────────────── */}
+            <div>
+              {/* Live badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-strong text-eyebrow mb-7 animate-fade-up">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-green-500 animate-dot-pulse flex-shrink-0"
+                  aria-hidden="true"
+                />
+                Now tracking · {allContent.length}+ titles
+              </div>
+
+              <h1 className="font-bold text-[clamp(44px,6.5vw,88px)] leading-[0.96] tracking-tight mb-5 animate-fade-up animation-delay-100">
+                Every film
+                <br />
+                worth{' '}
+                <em className="not-italic text-primary">
+                  remembering.
+                </em>
+              </h1>
+
+              <p className="text-lg leading-relaxed text-muted-foreground max-w-[520px] mb-8 animate-fade-up animation-delay-200">
+                Your personal cinema archive — track what you've watched, what
+                you'll watch next, and what you almost forgot. Built for the
+                obsessed.
+              </p>
+
+              <div className="flex flex-wrap gap-3 animate-fade-up animation-delay-300">
+                <Link to="/browse">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Film className="h-4 w-4" aria-hidden="true" />
+                    Start your watchlist
+                  </button>
+                </Link>
+                <Link to="/register">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-transparent text-foreground text-sm font-medium border border-border hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <TrendingUp className="h-4 w-4" aria-hidden="true" />
+                    See how it works
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* ── Right: Staggered poster grid ────────────────── */}
+            <div className="hidden lg:block relative h-[520px] animate-fade-up animation-delay-200">
+              <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-4">
+                {/* Col 1, rows 1-2 — tall, slightly lower */}
+                <div className="row-span-2 translate-y-6">
+                  {heroPosters[0] && (
+                    <Link
+                      to={getContentDetailsPath(heroPosters[0])}
+                      className="block h-full rounded-2xl overflow-hidden shadow-2xl hover:-translate-y-1 hover:shadow-[0_24px_48px_-8px_rgba(0,0,0,0.35)] transition-all duration-300 group"
+                    >
+                      <img
+                        src={getAssetUrl(heroPosters[0].poster)}
+                        alt={heroPosters[0].title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
+                  )}
+                </div>
+
+                {/* Col 2-3, row 1 — wide landscape */}
+                <div className="col-span-2 rounded-2xl overflow-hidden shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                  {heroPosters[1] && (
+                    <Link to={getContentDetailsPath(heroPosters[1])} className="block h-full">
+                      <img
+                        src={getAssetUrl(heroPosters[1].poster)}
+                        alt={heroPosters[1].title}
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
+                  )}
+                </div>
+
+                {/* Col 2, row 2 */}
+                <div className="rounded-2xl overflow-hidden shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                  {heroPosters[2] && (
+                    <Link to={getContentDetailsPath(heroPosters[2])} className="block h-full">
+                      <img
+                        src={getAssetUrl(heroPosters[2].poster)}
+                        alt={heroPosters[2].title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
+                  )}
+                </div>
+
+                {/* Col 3, row 2 */}
+                <div className="rounded-2xl overflow-hidden shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                  {heroPosters[3] && (
+                    <Link to={getContentDetailsPath(heroPosters[3])} className="block h-full">
+                      <img
+                        src={getAssetUrl(heroPosters[3].poster)}
+                        alt={heroPosters[3].title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Stats widget — bottom right */}
+              <div className="absolute -bottom-6 -right-4 z-10 flex items-center gap-0 rounded-2xl glass-strong shadow-xl animate-fade-up animation-delay-400 overflow-hidden">
+                {[
+                  { value: allContent.length, label: 'Titles' },
+                  { value: genres.length, label: 'Genres' },
+                  { value: movies.length + tvShows.length, label: 'Items' },
+                ].map((stat, i, arr) => (
+                  <div key={stat.label} className="flex items-stretch">
+                    <div className="flex flex-col items-center px-5 py-4">
+                      <span className="text-2xl font-bold tracking-tight tabular-nums text-foreground">
+                        {stat.value}
+                      </span>
+                      <span className="text-eyebrow mt-0.5">{stat.label}</span>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <div className="w-px bg-border/60 self-stretch my-3" />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-12 bg-accent/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Most Popular</h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={prevSlide}
-                className="p-2 rounded-full bg-background hover:bg-accent transition-colors"
-                aria-label="Previous popular item"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="p-2 rounded-full bg-background hover:bg-accent transition-colors"
-                aria-label="Next popular item"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+      {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
+      <div className="max-w-[1360px] mx-auto px-6 lg:px-10 pb-24 space-y-20">
 
-          <div className="relative overflow-hidden rounded-xl">
+        {/* Most Popular — Carousel */}
+        <section>
+          <SectionHeader
+            eyebrow="The Pulse · Updated hourly"
+            title="Most popular this week"
+            actionLabel="See all trending"
+            actionHref="/browse"
+          />
+          <HeroCarousel items={popular} />
+        </section>
+
+        {/* Featured Content — 4-col grid */}
+        <section>
+          <SectionHeader
+            eyebrow="Editor's Selection"
+            title="Featured content"
+            actionLabel="View all"
+            actionHref="/browse"
+          />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+            {featured.map((item) => (
+              <PosterCard key={item.id} item={item} showHoverInfo />
+            ))}
+          </div>
+        </section>
+
+        {/* Top Movies — horizontal scroll */}
+        <section>
+          <SectionHeader
+            eyebrow="By critic score"
+            title="Top movies"
+            actionLabel="View all films"
+            actionHref="/browse"
+          />
+          <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide -mx-2 px-2">
+            {topMovies.map((movie) => (
+              <div key={movie.id} className="flex-none w-[160px] md:w-[185px] snap-start">
+                <PosterCard item={movie} showHoverInfo />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Top TV Shows — horizontal scroll */}
+        <section>
+          <SectionHeader
+            eyebrow="Binge-worthy"
+            title="Top TV shows"
+            actionLabel="View all series"
+            actionHref="/browse"
+          />
+          <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide -mx-2 px-2">
+            {topShows.map((show) => (
+              <div key={show.id} className="flex-none w-[160px] md:w-[185px] snap-start">
+                <PosterCard item={show} showHoverInfo />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA — glass section */}
+        <section>
+          <div className="glass-strong relative overflow-hidden rounded-3xl p-10 md:p-14">
+            {/* Subtle radial gradient accent */}
             <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {popularContent.map((item) => (
-                <div key={item.id} className="w-full flex-shrink-0">
-                  <Link to={getContentDetailsPath(item)}>
-                    <div className="relative aspect-[21/9] md:aspect-[3/1] overflow-hidden rounded-xl">
-                      <img
-                        src={getAssetUrl(item.poster)}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded">
-                            {item.type === 'movie' ? 'Movie' : 'TV Show'}
-                          </span>
-                          <span className="text-white/80 text-sm">{item.year}</span>
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">{item.title}</h3>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center">
-                            <Star className="h-5 w-5 text-yellow-400 fill-yellow-400 mr-1" />
-                            <span className="text-white font-medium">{item.rating}</span>
-                          </div>
-                          <span className="text-white/70">{item.genre.slice(0, 2).join(', ')}</span>
-                        </div>
-                      </div>
-                    </div>
+              className="absolute inset-0 -z-0 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(ellipse at 75% 20%, hsl(var(--primary)/0.15), transparent 55%)',
+              }}
+              aria-hidden="true"
+            />
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-10 items-center">
+              {/* Copy */}
+              <div>
+                <p className="text-eyebrow mb-3">Ready when you are</p>
+                <h2 className="text-3xl md:text-[40px] font-bold tracking-tight leading-tight mb-4">
+                  Turn watching into
+                  <br />a habit worth keeping.
+                </h2>
+                <p className="text-muted-foreground text-base leading-relaxed mb-7 max-w-[500px]">
+                  Build your personal watchlist, keep track of what you've seen,
+                  and discover what to queue next — all in one place.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link to="/register">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors cursor-pointer shadow-sm"
+                    >
+                      Create free account
+                    </button>
+                  </Link>
+                  <Link to="/browse">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-foreground text-sm font-medium border border-border hover:bg-muted transition-colors cursor-pointer"
+                    >
+                      Browse without signup
+                    </button>
                   </Link>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              {popularContent.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentSlide ? 'bg-white' : 'bg-white/50'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+              {/* Mini poster grid */}
+              <div className="hidden lg:grid grid-cols-2 gap-3">
+                {allContent.slice(5, 9).map((item) => (
+                  <PosterCard key={item.id} item={item} />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Featured Content</h2>
-            <Link to="/browse" className="flex items-center text-primary hover:underline">
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredContent.map((item) => (
-              <Link key={item.id} to={getContentDetailsPath(item)}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
-                  <div className="aspect-[2/3] overflow-hidden">
-                    <img
-                      src={getAssetUrl(item.poster)}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-foreground truncate">{item.title}</h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-sm text-muted-foreground">{item.year}</span>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span className="text-sm font-medium">{item.rating}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {item.genre.slice(0, 2).map((genre) => (
-                        <span
-                          key={genre}
-                          className="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded"
-                        >
-                          {genre}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-accent/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Top Movies</h2>
-            <Link to="/browse" className="flex items-center text-primary hover:underline">
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topMovies.map((movie) => (
-              <Link key={movie.id} to={getContentDetailsPath(movie)}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
-                  <div className="flex">
-                    <div className="w-1/3 aspect-[2/3] overflow-hidden">
-                      <img
-                        src={getAssetUrl(movie.poster)}
-                        alt={movie.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="w-2/3 p-4">
-                      <h3 className="font-semibold text-foreground line-clamp-2">{movie.title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{movie.director}</p>
-                      <div className="flex items-center mt-2">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span className="text-sm font-medium">{movie.rating}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                        {movie.synopsis}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Top TV Shows</h2>
-            <Link to="/browse" className="flex items-center text-primary hover:underline">
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topShows.map((show) => (
-              <Link key={show.id} to={getContentDetailsPath(show)}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
-                  <div className="flex">
-                    <div className="w-1/3 aspect-[2/3] overflow-hidden">
-                      <img
-                        src={getAssetUrl(show.poster)}
-                        alt={show.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="w-2/3 p-4">
-                      <h3 className="font-semibold text-foreground line-clamp-2">{show.title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{show.creator}</p>
-                      <div className="flex items-center mt-2">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span className="text-sm font-medium">{show.rating}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {show.seasons} Seasons | {show.episodes} Episodes
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-primary/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Ready to Start Tracking?
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Join thousands of movie and TV show enthusiasts. Create your free account today!
-          </p>
-          <Link to="/register">
-            <Button size="lg">
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

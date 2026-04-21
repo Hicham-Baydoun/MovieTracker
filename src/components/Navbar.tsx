@@ -21,23 +21,29 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <img src={getAssetUrl('assets/images/logo.png')} alt="MovieTracker" className="h-8 w-8" />
-            <span className="text-xl font-bold text-foreground">MovieTracker</span>
+        <div className="flex items-center justify-between h-[70px]">
+          <Link to="/" className="flex items-center gap-3 group">
+            <img
+              src={getAssetUrl('assets/images/logo.png')}
+              alt="Movie Buddy logo"
+              className="h-14 w-14 object-contain drop-shadow-sm"
+            />
+            <span className="text-[1.6rem] font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tracking-tight leading-none">
+              Movie Buddy
+            </span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(link.path)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-foreground/70 hover:text-foreground hover:bg-muted'
                 }`}
               >
                 {link.label}
@@ -50,7 +56,7 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="text-foreground"
+              className="text-foreground/70 hover:text-foreground"
               aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -59,26 +65,21 @@ export default function Navbar() {
             {currentUser ? (
               <>
                 <span className="text-sm text-muted-foreground px-2">
-                  Hi, {currentUser.username}
+                  Hi, <span className="font-medium text-foreground">{currentUser.username}</span>
                 </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                >
+                <Button variant="outline" size="sm" onClick={logout}>
                   Logout
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="outline" size="sm">
+                  <Button variant="ghost" size="sm">
                     Login
                   </Button>
                 </Link>
-
                 <Link to="/register">
-                  <Button size="sm">
+                  <Button size="sm" className="shadow-sm">
                     Register
                   </Button>
                 </Link>
@@ -91,7 +92,7 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="text-foreground"
+              className="text-foreground/70 hover:text-foreground"
               aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -109,30 +110,30 @@ export default function Navbar() {
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
-            <div className="flex flex-col space-y-2">
+          <div className="md:hidden py-4 border-t border-border/60">
+            <div className="flex flex-col space-y-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     isActive(link.path)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? 'bg-primary/10 text-primary font-semibold'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted'
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
               {currentUser ? (
-                <div className="pt-2 border-t border-border">
-                  <p className="text-sm text-muted-foreground px-3 py-2">
-                    Signed in as {currentUser.username}
+                <div className="pt-3 border-t border-border/60 mt-2">
+                  <p className="text-sm text-muted-foreground px-4 py-1">
+                    Signed in as <span className="font-medium text-foreground">{currentUser.username}</span>
                   </p>
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full mt-2"
                     onClick={() => {
                       logout();
                       setIsMenuOpen(false);
@@ -142,16 +143,12 @@ export default function Navbar() {
                   </Button>
                 </div>
               ) : (
-                <div className="flex space-x-2 pt-2 border-t border-border">
+                <div className="flex space-x-2 pt-3 border-t border-border/60 mt-2">
                   <Link to="/login" className="flex-1" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Login
-                    </Button>
+                    <Button variant="outline" className="w-full">Login</Button>
                   </Link>
                   <Link to="/register" className="flex-1" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full">
-                      Register
-                    </Button>
+                    <Button className="w-full">Register</Button>
                   </Link>
                 </div>
               )}
@@ -162,4 +159,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
