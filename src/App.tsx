@@ -3,7 +3,6 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppDataProvider } from './context/AppDataContext';
 import Navbar from './components/Navbar';
-import MovieAssistant from './components/MovieAssistant';
 import Homepage from './pages/Homepage';
 import Browse from './pages/Browse';
 import Details from './pages/Details';
@@ -41,7 +40,6 @@ const App: FC = () => {
                 <Route path="/edit/:id" element={<AddEdit />} />
               </Routes>
             </main>
-            <MovieAssistant />
           </div>
         </Router>
       </AppDataProvider>

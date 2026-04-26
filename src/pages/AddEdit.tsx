@@ -21,7 +21,7 @@ export default function AddEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
-  const contentId = parseInt(id || '0');
+  const contentId = id ?? '';
 
   const [contentType, setContentType] = useState<'movie' | 'show'>('movie');
   const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ export default function AddEdit() {
     genre: [] as string[],
     rating: 7.0,
     synopsis: '',
-    poster: 'assets/images/movie1.jpg',
+    poster: '',
     duration: '',
     director: '',
     cast: [] as string[],
@@ -44,6 +44,9 @@ export default function AddEdit() {
   const [newGenre, setNewGenre] = useState('');
   const [newCastMember, setNewCastMember] = useState('');
 
+  // Pre-fill the form when editing an existing entry. The 'in' checks are
+  // needed because Movie and TVShow share a single form state but have
+  // different fields — accessing content.duration on a show would be undefined.
   useEffect(() => {
     if (isEditMode) {
       const content = getContentById(contentId);
@@ -90,6 +93,12 @@ export default function AddEdit() {
       newErrors.synopsis = 'Synopsis is required';
     }
 
+    if (!formData.poster.trim()) {
+      newErrors.poster = 'Poster URL is required';
+    } else if (!/^https?:\/\/.+/.test(formData.poster.trim())) {
+      newErrors.poster = 'Please enter a valid image URL (starting with http:// or https://)';
+    }
+
     if (contentType === 'movie') {
       if (!formData.duration.trim()) {
         newErrors.duration = 'Duration is required';
@@ -127,8 +136,8 @@ export default function AddEdit() {
 
     setIsSubmitting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
+    // year and rating come from number inputs but React stores them as strings,
+    // so coerce here before sending to the API.
     const basePayload = {
       title: formData.title.trim(),
       year: Number(formData.year),
@@ -139,47 +148,39 @@ export default function AddEdit() {
       cast: formData.cast,
     };
 
-    if (contentType === 'movie') {
-      const payload = {
-        ...basePayload,
-        type: 'movie' as const,
-        duration: formData.duration.trim(),
-        director: formData.director.trim(),
-      };
-
-      if (isEditMode) {
-        const updated = updateContent(contentId, payload);
-        if (!updated) {
-          setSubmitError('Unable to update this movie. Please try again.');
-          setIsSubmitting(false);
-          return;
+    try {
+      if (contentType === 'movie') {
+        const payload = {
+          ...basePayload,
+          type: 'movie' as const,
+          duration: formData.duration.trim(),
+          director: formData.director.trim(),
+        };
+        if (isEditMode) {
+          await updateContent(contentId, payload);
+        } else {
+          await addContent(payload);
         }
       } else {
-        addContent(payload);
-      }
-    } else {
-      const payload = {
-        ...basePayload,
-        type: 'show' as const,
-        seasons: Number(formData.seasons),
-        episodes: Number(formData.episodes),
-        creator: formData.creator.trim(),
-      };
-
-      if (isEditMode) {
-        const updated = updateContent(contentId, payload);
-        if (!updated) {
-          setSubmitError('Unable to update this TV show. Please try again.');
-          setIsSubmitting(false);
-          return;
+        const payload = {
+          ...basePayload,
+          type: 'show' as const,
+          seasons: Number(formData.seasons),
+          episodes: Number(formData.episodes),
+          creator: formData.creator.trim(),
+        };
+        if (isEditMode) {
+          await updateContent(contentId, payload);
+        } else {
+          await addContent(payload);
         }
-      } else {
-        addContent(payload);
       }
+      navigate('/browse');
+    } catch (err) {
+      setSubmitError((err as Error).message ?? 'Something went wrong. Please try again.');
     }
 
     setIsSubmitting(false);
-    navigate('/browse');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -251,7 +252,6 @@ export default function AddEdit() {
                       variant={contentType === 'movie' ? 'default' : 'outline'}
                       onClick={() => {
                         setContentType('movie');
-                        setFormData((prev) => ({ ...prev, poster: 'assets/images/movie1.jpg' }));
                       }}
                       className="flex-1"
                     >
@@ -263,7 +263,6 @@ export default function AddEdit() {
                       variant={contentType === 'show' ? 'default' : 'outline'}
                       onClick={() => {
                         setContentType('show');
-                        setFormData((prev) => ({ ...prev, poster: 'assets/images/show1.jpg' }));
                       }}
                       className="flex-1"
                     >
@@ -486,6 +485,27 @@ export default function AddEdit() {
                   className={errors.synopsis ? 'border-destructive' : ''}
                 />
                 {errors.synopsis && <p className="text-sm text-destructive">{errors.synopsis}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="poster">Poster Image URL *</Label>
+                <Input
+                  id="poster"
+                  name="poster"
+                  value={formData.poster}
+                  onChange={handleChange}
+                  placeholder="https://image.tmdb.org/t/p/w500/..."
+                  className={errors.poster ? 'border-destructive' : ''}
+                />
+                {errors.poster && <p className="text-sm text-destructive">{errors.poster}</p>}
+                {formData.poster && /^https?:\/\/.+/.test(formData.poster) && (
+                  <img
+                    src={formData.poster}
+                    alt="Poster preview"
+                    className="mt-2 h-32 w-auto rounded-lg object-cover border border-border"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">

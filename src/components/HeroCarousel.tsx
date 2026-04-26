@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Star, ChevronLeft, ChevronRight, Plus, Check, Play } from 'lucide-react';
-import type { Movie, TVShow } from '@/data/mockData';
+import type { Movie, TVShow } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
 import { getAssetUrl } from '@/lib/assetUrl';
 import { useAppData } from '@/context/AppDataContext';

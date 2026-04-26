@@ -1,7 +1,7 @@
 // Reusable poster card: rating/type badges, hover synopsis, optional watchlist remove button.
 import { Link } from 'react-router-dom';
 import { Star, Film, Tv, Trash2 } from 'lucide-react';
-import type { Movie, TVShow } from '@/data/mockData';
+import type { Movie, TVShow } from '@/context/AppDataContext';
 import { getContentDetailsPath } from '@/lib/contentRoutes';
 import { getAssetUrl } from '@/lib/assetUrl';
 import { cn } from '@/lib/utils';

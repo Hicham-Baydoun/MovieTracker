@@ -1,4 +1,4 @@
-import type { Movie, TVShow } from '@/data/mockData';
+import type { Movie, TVShow } from '@/context/AppDataContext';
 
 type ContentRouteInput = Pick<Movie, 'id' | 'type'> | Pick<TVShow, 'id' | 'type'>;
 

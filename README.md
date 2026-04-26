@@ -1,6 +1,6 @@
-# Code Weavers - Movie and TV Show Tracker (Phase 1)
+# Code Weavers - Movie and TV Show Tracker (Phase 2)
 
-Frontend application for CSC443 built with React, TypeScript, Vite, and Tailwind CSS.
+Full-stack application for CSC443 built with React, TypeScript, Vite, Tailwind CSS, Node.js, Express, and MongoDB.
 
 ## Project Title and Team Member Names
 
@@ -14,150 +14,183 @@ Frontend application for CSC443 built with React, TypeScript, Vite, and Tailwind
 
 ## Assigned Topic and Primary Data Entities
 
-* **Assigned Topic:** Build a movie and TV show tracking frontend with browsing, details, authentication views, and watchlist interactions.
+* **Assigned Topic:** Build a full-stack movie and TV show tracker with real database storage, JWT authentication, and a REST API.
 
-Primary data entities used in the project:
+Primary data entities:
 
-* **Movie**: `id`, `title`, `year`, `genre\[]`, `rating`, `duration`, `director`, `cast\[]`, `synopsis`, `poster`, `type`
-* **TVShow**: `id`, `title`, `year`, `genre\[]`, `rating`, `seasons`, `episodes`, `creator`, `cast\[]`, `synopsis`, `poster`, `type`
-* **User**: `id`, `username`, `email`, `password`, `avatar`, `watchlist\[]`, `joinedDate`
-* **Genre**: fixed genre list used by filters and content forms
-* **Watchlist**: user-specific list of saved content IDs
+* **Movie**: `id`, `tmdbId`, `title`, `year`, `genre[]`, `rating`, `duration`, `director`, `cast[]`, `synopsis`, `poster`, `type`, `createdBy`
+* **TVShow**: `id`, `tmdbId`, `title`, `year`, `genre[]`, `rating`, `seasons`, `episodes`, `creator`, `cast[]`, `synopsis`, `poster`, `type`, `createdBy`
+* **User**: `id`, `username`, `email`, `password` (hashed), `avatar`, `watchlist[]`, `joinedDate`
 
 ## Deployed Application Link
 
 [Open the deployed app](https://hicham-baydoun.github.io/MovieTracker/)
 
-## Frontend Setup Instructions (Local)
+---
+
+## Local Setup Instructions
 
 ### Prerequisites
 
 * Node.js `20+`
 * npm `10+`
+* A `.env` file in `backend/` (see below)
 
-### Steps
-
-1. Clone the repository:
-
-```bash
-   git clone https://github.com/Hicham-Baydoun/MovieTracker.git
-   ```
-
-2. Move into the project folder:
+### 1 — Clone the repo
 
 ```bash
-   cd app
-   ```
+git clone https://github.com/Hicham-Baydoun/MovieTracker.git
+cd app
+```
 
-3. Install dependencies:
-
-```bash
-   npm install
-   ```
-
-4. Start the frontend development server:
+### 2 — Backend
 
 ```bash
-   npm run dev
-   ```
+cd backend
+npm install
+```
 
-5. Open the local URL shown in the terminal (default: `http://localhost:5173`).
+Create `backend/.env`:
+
+```env
+MONGODB_URI=<your MongoDB Atlas connection string>
+JWT_SECRET=<any long random string>
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+```
+
+Start the backend:
+
+```bash
+npm run dev
+```
+
+### 3 — Frontend
+
+In a separate terminal from the project root:
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`.
 
 ### Useful Scripts
 
-* `npm run dev` - start local development server
-* `npm run build` - create production build in `dist/`
-* `npm run preview` - preview the production build locally
-* `npm run lint` - run ESLint checks
+| Command | Description |
+|---|---|
+| `npm run dev` (root) | Start frontend dev server |
+| `npm run build` (root) | Production build in `dist/` |
+| `npm run dev` (backend/) | Start backend with nodemon |
 
-### Demo Login Credentials
+---
 
-```text
-Email: moviebuff@example.com
-Password: password123
-```
+## API Endpoints
 
-## Screenshots or Demo GIF
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/content` | No | List all movies and shows (supports `?type=`, `?genre=`, `?search=`) |
+| GET | `/api/content/:id` | No | Get a single item |
+| POST | `/api/content` | Yes | Add a new movie or show |
+| PUT | `/api/content/:id` | Yes | Update (owner only) |
+| DELETE | `/api/content/:id` | Yes | Delete (owner only) |
+| POST | `/api/auth/register` | No | Create account, returns JWT cookie |
+| POST | `/api/auth/login` | No | Sign in, returns JWT cookie |
+| POST | `/api/auth/logout` | No | Clear JWT cookie |
+| GET | `/api/auth/me` | Cookie | Restore session on page load |
+| GET | `/api/users/profile` | Yes | Get logged-in user profile + watchlist |
+| GET | `/api/users/watchlist` | Yes | Get watchlist as full content objects |
+| POST | `/api/users/watchlist/:id` | Yes | Add item to watchlist |
+| DELETE | `/api/users/watchlist/:id` | Yes | Remove item from watchlist |
 
-Project screenshots (as provided) should be stored in `docs/screenshots/` using the filenames below:
+---
 
-* `homepage.png`
-* `browse.png`
-* `profile.png`
-* `register.png`
-* `login.png`
+## Team Member Contributions (Phase 2 — Backend)
 
-!\[Homepage](docs/screenshots/homepage.png)
-!\[Browse](docs/screenshots/browse.png)
-!\[Profile](docs/screenshots/profile.png)
-!\[Register](docs/screenshots/register.png)
-!\[Login](docs/screenshots/login.png)
+### Hicham Baydoun
+* **`backend/src/index.js`** — Server entry point. Wires up CORS (with credentials for cookie support), middleware stack, all route prefixes, and the global error handler.
+* **`backend/src/routes/content.js`** — Full CRUD for movies and TV shows. Includes search, genre and type filters, and ownership checks that prevent users from editing or deleting seeded TMDB content.
 
-## Team Member Contributions (Two Primary Views Per Member)
+### Dana Tello
+* **`backend/src/routes/auth.js`** — Register, login, logout, and session-restore endpoints. Handles bcrypt password hashing, JWT signing, and httpOnly cookie management.
+* **`backend/src/middleware/auth.js`** — `requireAuth` middleware that verifies the JWT from the cookie or Authorization header and attaches the decoded user to `req.user`.
 
-1. **Hicham Baydoun**
+### Kassem Nader
+* **`backend/src/routes/users.js`** — Profile and watchlist endpoints. Uses MongoDB `$addToSet` and `$pull` for safe watchlist add/remove, and `populate()` to return full content objects instead of raw IDs.
+* **`backend/src/config/db.js`** — MongoDB Atlas connection function called once at server startup via Mongoose.
 
-   * **Add/Edit (`/add`, `/edit/:id`)**: led one of the most complex flows in the project, including dynamic movie/TV form behavior, conditional fields, strict validation, edit-mode prefill, and create/update persistence to shared mock state.
-   * **Browse (`/browse`)**: implemented advanced search and multi-filter logic, active filter state management, and responsive result rendering for both movies and TV shows.
-2. **Nour Al Housa Al Omari**
+### Nour Al Housa Al Omari
+* **`backend/src/models/User.js`** — Mongoose schema for user accounts. Stores a watchlist as an array of `ObjectId` references to Content documents.
+* **`backend/src/models/Content.js`** — Unified Mongoose schema for both movies and TV shows. Uses `createdBy: null` to mark seeded TMDB content as read-only, and an ObjectId when a user creates an entry.
 
-   * **Movie Details View (`/movies/:id`)**: implemented movie metadata display, watchlist toggle UI, and related-content section.
-   * **TV Show Details View (`/shows/:id`)**: implemented seasons/episodes/creator presentation and shared details interactions.
-3. **Kassem Nader**
+---
 
-   * **Homepage (`/`)**: implemented hero section, featured content blocks, and call-to-action layout.
-   * **Profile (`/profile`)**: implemented user info panel, watchlist rendering, and remove-from-watchlist behavior.
-4. **Dana Tello**
+## Phase 1 Contributions (Frontend)
 
-   * **Login (`/login`)**: implemented form validation, password visibility toggle, mock authentication flow, and redirect handling.
-   * **Register (`/register`)**: implemented registration form UI, validation, and onboarding flow.
+1. **Hicham Baydoun** — Add/Edit page (`/add`, `/edit/:id`) and Browse page (`/browse`)
+2. **Nour Al Housa Al Omari** — Movie Details (`/movies/:id`) and TV Show Details (`/shows/:id`)
+3. **Kassem Nader** — Homepage (`/`) and Profile page (`/profile`)
+4. **Dana Tello** — Login page (`/login`) and Register page (`/register`)
 
-## How Mock Data Simulates Real Interactions
+---
 
-Mock data is centralized in [`src/data/mockData.ts`](src/data/mockData.ts) and used as an in-memory stand-in for backend APIs.
+## How the Backend Works
 
-* **Seeded datasets**: 5 movies, 5 TV shows, 2 users, and 12 genres.
-* **Shared data layer**: `AppDataContext` exposes shared `allContent`, `getContentById`, auth handlers, CRUD handlers, and watchlist handlers across pages.
-* **Authentication simulation**: login checks email/password against mock users, and register creates new mock user accounts.
-* **Write simulation**: add/edit form uses local state + context to create and update movies/TV shows in shared mock storage.
-* **Watchlist simulation**: profile and details pages share synchronized add/remove watchlist behavior through app context.
-* **Persistence layer**: all mock interactions are persisted in browser `localStorage` to simulate backend-backed user sessions and data changes.
+* All content (100 items — 50 movies, 50 TV shows) is seeded from the TMDB API into MongoDB Atlas.
+* Authentication uses **JWT stored in an httpOnly cookie**, which the browser sends automatically on every request. This keeps the token out of JavaScript and protects against XSS.
+* The React frontend calls the backend via `apiFetch()` (`src/lib/api.ts`) with `credentials: 'include'` so cookies travel with every request.
+* On app load, the frontend calls `/api/auth/me` in parallel with `/api/content` to restore the session without blocking the library from loading.
+* Content entries with `createdBy: null` are seeded/read-only. Entries a user adds themselves have `createdBy` set to their user ID and can only be edited or deleted by them.
+
+---
 
 ## Project Structure
 
 ```text
-src/
-|-- components/
-|   |-- Navbar.tsx
-|-- context/
-|   |-- ThemeContext.tsx
-|   |-- AppDataContext.tsx
-|-- data/
-|   |-- mockData.ts
-|-- pages/
-|   |-- Homepage.tsx
-|   |-- Browse.tsx
-|   |-- Details.tsx
-|   |-- MovieDetails.tsx
-|   |-- ShowDetails.tsx
-|   |-- AddEdit.tsx
-|   |-- Profile.tsx
-|   |-- Login.tsx
-|   |-- Register.tsx
-|   |-- ForgotPassword.tsx
-|   |-- Terms.tsx
-|   |-- Privacy.tsx
-|-- App.tsx
-|-- main.tsx
+app/
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── db.js              # MongoDB connection
+│   │   ├── middleware/
+│   │   │   └── auth.js            # JWT verification middleware
+│   │   ├── models/
+│   │   │   ├── Content.js         # Movie + TV show schema
+│   │   │   └── User.js            # User schema
+│   │   ├── routes/
+│   │   │   ├── auth.js            # Auth endpoints
+│   │   │   ├── content.js         # Content CRUD
+│   │   │   └── users.js           # Profile + watchlist
+│   │   └── index.js               # Server entry point
+│   └── package.json
+├── src/
+│   ├── components/
+│   ├── context/
+│   │   └── AppDataContext.tsx     # Global state + API calls
+│   ├── lib/
+│   │   └── api.ts                 # Central fetch wrapper
+│   ├── pages/
+│   │   ├── Homepage.tsx
+│   │   ├── Browse.tsx
+│   │   ├── Details.tsx
+│   │   ├── AddEdit.tsx
+│   │   ├── Profile.tsx
+│   │   ├── Login.tsx
+│   │   └── Register.tsx
+│   ├── App.tsx
+│   └── main.tsx
+└── README.md
 ```
 
 ## Tech Stack
 
-* React 19
-* TypeScript 5
-* Vite 7
-* Tailwind CSS 3.4
-* React Router 7
-* shadcn/ui + Radix UI
-* Lucide React
-
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, TypeScript 5, Vite 7, Tailwind CSS, shadcn/ui |
+| Backend | Node.js, Express 5 |
+| Database | MongoDB Atlas (Mongoose ODM) |
+| Auth | JWT + bcrypt, httpOnly cookies |
+| Data source | TMDB API v3 |
+| Deployment | Vercel (frontend) · Render (backend) |

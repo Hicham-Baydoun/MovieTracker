@@ -27,8 +27,7 @@ export default function Details({ requiredType }: DetailsProps = {}) {
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
   const { allContent, currentUser, getContentById, toggleWatchlist } = useAppData();
 
-  const contentId = Number(id);
-  const content = Number.isNaN(contentId) ? undefined : getContentById(contentId);
+  const content = id ? getContentById(id) : undefined;
   const isWrongType = Boolean(content && requiredType && content.type !== requiredType);
 
   // Up to 3 items sharing a genre; filtered by type so movies only show related movies.

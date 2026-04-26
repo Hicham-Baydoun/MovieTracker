@@ -44,9 +44,8 @@ export default function Login() {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const result = login(formData.email, formData.password);
+    const result = await login(formData.email, formData.password);
 
     if (result.success) {
       navigate('/profile');

@@ -20,7 +20,7 @@ const PASSWORD_RULES = [
 ];
 
 export default function Register() {
-  const { movies, tvShows, users, registerUser } = useAppData();
+  const { movies, tvShows, registerUser } = useAppData();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -83,9 +83,8 @@ export default function Register() {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const result = registerUser({
+    const result = await registerUser({
       username: formData.username,
       email: formData.email,
       password: formData.password,
@@ -410,7 +409,7 @@ export default function Register() {
               <p className="text-sm text-muted-foreground mt-0.5">TV Shows</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-primary tabular-nums">{users.length}</p>
+              <p className="text-3xl font-bold text-primary tabular-nums">1K+</p>
               <p className="text-sm text-muted-foreground mt-0.5">Users</p>
             </div>
           </div>
