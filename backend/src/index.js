@@ -14,9 +14,20 @@ connectDB().catch(err => {
   process.exit(1);
 });
 
-// Allow requests only from the frontend origin and include cookies in cross-origin requests
+// Allow requests from the frontend — accepts the production URL, any Vercel
+// preview deployment for this project, and localhost for local development.
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+];
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // allow server-to-server / curl
+    const ok =
+      ALLOWED_ORIGINS.includes(origin) ||
+      /https:\/\/movie-tracker-.*\.vercel\.app$/.test(origin);
+    cb(ok ? null : new Error('Not allowed by CORS'), ok);
+  },
   credentials: true,
 }));
 
