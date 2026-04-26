@@ -14,20 +14,10 @@ connectDB().catch(err => {
   process.exit(1);
 });
 
-// Allow requests from the frontend — accepts the production URL, any Vercel
-// preview deployment for this project, and localhost for local development.
-const ALLOWED_ORIGINS = [
-  process.env.FRONTEND_URL,
-  'http://localhost:5173',
-];
+// Reflect the request origin back — allows all domains while still
+// supporting credentials (cookies). Fine for a student project.
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // allow server-to-server / curl
-    const ok =
-      ALLOWED_ORIGINS.includes(origin) ||
-      /https:\/\/movie-tracker-.*\.vercel\.app$/.test(origin);
-    cb(ok ? null : new Error('Not allowed by CORS'), ok);
-  },
+  origin: true,
   credentials: true,
 }));
 
