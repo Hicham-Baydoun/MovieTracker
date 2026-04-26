@@ -12,6 +12,8 @@ Full-stack application for CSC443 built with React, TypeScript, Vite, Tailwind C
 * **Team Member 3:** Kassem Nader
 * **Team Member 4:** Dana Tello
 
+---
+
 ## Assigned Topic and Primary Data Entities
 
 * **Assigned Topic:** Build a full-stack movie and TV show tracker with real database storage, JWT authentication, and a REST API.
@@ -22,9 +24,34 @@ Primary data entities:
 * **TVShow**: `id`, `tmdbId`, `title`, `year`, `genre[]`, `rating`, `seasons`, `episodes`, `creator`, `cast[]`, `synopsis`, `poster`, `type`, `createdBy`
 * **User**: `id`, `username`, `email`, `password` (hashed), `avatar`, `watchlist[]`, `joinedDate`
 
-## Deployed Application Link
+---
 
-[Open the deployed app](https://hicham-baydoun.github.io/MovieTracker/)
+## Deployed Application Links
+
+| Service | URL |
+|---|---|
+| **Frontend (Vercel)** | https://movie-tracker-murex.vercel.app |
+| **Backend API (Railway)** | https://movietracker-production-3a69.up.railway.app |
+| **Health check** | https://movietracker-production-3a69.up.railway.app/api/health |
+
+---
+
+## Screenshots
+
+### Home Page
+![Home Page](screenshots/home.png)
+
+### Browse Page
+![Browse Page](screenshots/browse.png)
+
+### Movie Details
+![Details Page](screenshots/details.png)
+
+### Add / Edit Content
+![Add Edit Page](screenshots/add-edit.png)
+
+### Profile & Watchlist
+![Profile Page](screenshots/profile.png)
 
 ---
 
@@ -68,6 +95,12 @@ npm run dev
 
 ### 3 — Frontend
 
+Create `.env` in the project root:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
 In a separate terminal from the project root:
 
 ```bash
@@ -84,26 +117,233 @@ Open `http://localhost:5173`.
 | `npm run dev` (root) | Start frontend dev server |
 | `npm run build` (root) | Production build in `dist/` |
 | `npm run dev` (backend/) | Start backend with nodemon |
+| `npm run seed` (backend/) | Seed 100 TMDB items into MongoDB |
 
 ---
 
-## API Endpoints
+## API Documentation
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/api/content` | No | List all movies and shows (supports `?type=`, `?genre=`, `?search=`) |
-| GET | `/api/content/:id` | No | Get a single item |
-| POST | `/api/content` | Yes | Add a new movie or show |
-| PUT | `/api/content/:id` | Yes | Update (owner only) |
-| DELETE | `/api/content/:id` | Yes | Delete (owner only) |
-| POST | `/api/auth/register` | No | Create account, returns JWT cookie |
-| POST | `/api/auth/login` | No | Sign in, returns JWT cookie |
-| POST | `/api/auth/logout` | No | Clear JWT cookie |
-| GET | `/api/auth/me` | Cookie | Restore session on page load |
-| GET | `/api/users/profile` | Yes | Get logged-in user profile + watchlist |
-| GET | `/api/users/watchlist` | Yes | Get watchlist as full content objects |
-| POST | `/api/users/watchlist/:id` | Yes | Add item to watchlist |
-| DELETE | `/api/users/watchlist/:id` | Yes | Remove item from watchlist |
+Base URL (production): `https://movietracker-production-3a69.up.railway.app`
+
+Authentication is via **httpOnly JWT cookie** set automatically on login/register. Include `credentials: 'include'` in every fetch call. Endpoints marked **Cookie required** return `401` if the cookie is absent or expired.
+
+---
+
+### Content
+
+#### `GET /api/content`
+List all movies and TV shows. Supports query params: `?type=movie|tv`, `?genre=Action`, `?search=inception`.
+
+**Response `200`**
+```json
+[
+  {
+    "_id": "6650a1b2c3d4e5f6a7b8c9d0",
+    "tmdbId": 550,
+    "title": "Fight Club",
+    "year": 1999,
+    "genre": ["Drama", "Thriller"],
+    "rating": 8.8,
+    "duration": 139,
+    "director": "David Fincher",
+    "cast": ["Brad Pitt", "Edward Norton"],
+    "synopsis": "An insomniac office worker...",
+    "poster": "https://image.tmdb.org/t/p/w500/...",
+    "type": "movie",
+    "createdBy": null
+  }
+]
+```
+
+---
+
+#### `GET /api/content/:id`
+Get a single movie or TV show by its MongoDB `_id`.
+
+**Response `200`** — same shape as a single object from the list above.
+
+**Response `404`**
+```json
+{ "message": "Content not found" }
+```
+
+---
+
+#### `POST /api/content` — *Cookie required*
+Add a new movie or TV show. The `createdBy` field is set automatically from the JWT.
+
+**Request body**
+```json
+{
+  "title": "My Movie",
+  "year": 2024,
+  "type": "movie",
+  "genre": ["Action"],
+  "rating": 7.5,
+  "duration": 120,
+  "director": "Jane Doe",
+  "cast": ["Actor One", "Actor Two"],
+  "synopsis": "A great film.",
+  "poster": "https://example.com/poster.jpg"
+}
+```
+
+**Response `201`** — the created document (same shape as GET, with `createdBy` set to the user's `_id`).
+
+**Response `401`**
+```json
+{ "message": "Not authenticated" }
+```
+
+---
+
+#### `PUT /api/content/:id` — *Cookie required, owner only*
+Update an existing user-created entry. Seeded TMDB entries (`createdBy: null`) cannot be edited.
+
+**Request body** — any subset of the content fields (partial update supported).
+
+**Response `200`** — the updated document.
+
+**Response `403`**
+```json
+{ "message": "Not authorized to edit this content" }
+```
+
+---
+
+#### `DELETE /api/content/:id` — *Cookie required, owner only*
+Delete a user-created entry.
+
+**Response `200`**
+```json
+{ "message": "Content deleted" }
+```
+
+**Response `403`**
+```json
+{ "message": "Not authorized to delete this content" }
+```
+
+---
+
+### Auth
+
+#### `POST /api/auth/register`
+Create a new account. Sets an httpOnly JWT cookie on success.
+
+**Request body**
+```json
+{
+  "username": "hicham",
+  "email": "hicham@example.com",
+  "password": "secret123"
+}
+```
+
+**Response `201`**
+```json
+{
+  "_id": "6650a1b2c3d4e5f6a7b8c9d1",
+  "username": "hicham",
+  "email": "hicham@example.com",
+  "avatar": "",
+  "watchlist": [],
+  "joinedDate": "2026-04-26T00:00:00.000Z"
+}
+```
+
+**Response `400`**
+```json
+{ "message": "Email already in use" }
+```
+
+---
+
+#### `POST /api/auth/login`
+Sign in. Sets an httpOnly JWT cookie on success.
+
+**Request body**
+```json
+{
+  "email": "hicham@example.com",
+  "password": "secret123"
+}
+```
+
+**Response `200`** — same user object as register.
+
+**Response `401`**
+```json
+{ "message": "Invalid credentials" }
+```
+
+---
+
+#### `POST /api/auth/logout`
+Clears the JWT cookie.
+
+**Response `200`**
+```json
+{ "message": "Logged out" }
+```
+
+---
+
+#### `GET /api/auth/me` — *Cookie required*
+Restore session on page load without re-entering credentials.
+
+**Response `200`** — the logged-in user object (same shape as register response).
+
+**Response `401`**
+```json
+{ "message": "Not authenticated" }
+```
+
+---
+
+### Users
+
+#### `GET /api/users/profile` — *Cookie required*
+Get the logged-in user's profile including their watchlist IDs.
+
+**Response `200`**
+```json
+{
+  "_id": "6650a1b2c3d4e5f6a7b8c9d1",
+  "username": "hicham",
+  "email": "hicham@example.com",
+  "avatar": "",
+  "watchlist": ["6650a1b2c3d4e5f6a7b8c9d0"],
+  "joinedDate": "2026-04-26T00:00:00.000Z"
+}
+```
+
+---
+
+#### `GET /api/users/watchlist` — *Cookie required*
+Get the watchlist as fully populated content objects (not just IDs).
+
+**Response `200`** — array of content objects (same shape as `GET /api/content`).
+
+---
+
+#### `POST /api/users/watchlist/:id` — *Cookie required*
+Add a content item to the watchlist. Uses `$addToSet` so duplicates are ignored.
+
+**Response `200`**
+```json
+{ "message": "Added to watchlist" }
+```
+
+---
+
+#### `DELETE /api/users/watchlist/:id` — *Cookie required*
+Remove a content item from the watchlist.
+
+**Response `200`**
+```json
+{ "message": "Removed from watchlist" }
+```
 
 ---
 
@@ -136,6 +376,34 @@ Open `http://localhost:5173`.
 
 ---
 
+## Technical Challenges
+
+### 1 — Missing file not caught by local dev
+`backend/src/middleware/errorHandler.js` existed locally but had never been committed to git. The first Render deployment failed with `Cannot find module './middleware/errorHandler'`. The fix was to commit and push the missing file — a reminder that `git status` should always be checked before declaring the project "done."
+
+### 2 — Server not reachable after deploy (502 Bad Gateway)
+After the errorHandler was committed, the server started but Render returned 502 on every request. The root cause was `app.listen(PORT)` binding only to `127.0.0.1` (localhost) inside the container, which is unreachable from the outside. Fixing it to `app.listen(PORT, '0.0.0.0', ...)` resolved it immediately.
+
+### 3 — CORS blocking the frontend
+Render generates unique preview URLs per deployment (e.g. `movietracker-cxnd.onrender.com`). Hard-coding the allowed origin list broke every new preview deploy. The solution was to replace the origin allowlist with a dynamic header that reflects whatever `Origin` the browser sent, combined with `Access-Control-Allow-Credentials: true`, so any origin (including Vercel previews) is accepted without changing code.
+
+### 4 — Railway deploying the Vite frontend instead of Express
+The repo root contains the frontend `package.json` with a `dev` script that runs Vite. Railway's auto-detection picked that up and tried to serve the React app instead of the backend. Adding a `railway.json` config file at the repo root with an explicit `buildCommand` (`cd backend && npm install`) and `startCommand` (`cd backend && node src/index.js`) told Railway exactly what to build and run.
+
+### 5 — Port mismatch on Railway
+Railway injects a `PORT` environment variable (often `8080`) and routes external traffic to the port configured in the project's Networking settings. The server was running on `8080` (from Railway's `PORT`) but the public domain was configured to forward to `5000`. Every request timed out with "Application failed to respond." Changing the Networking port to match `8080` fixed it.
+
+### 6 — MongoDB Atlas blocking Railway's IP
+MongoDB Atlas Network Access was set to allow only the developer's home IP. Railway containers run on dynamic cloud IPs, so every connection attempt was refused. Adding `0.0.0.0/0` to Atlas Network Access (allow all IPs) resolved it for a cloud-hosted backend where IP pinning is not practical.
+
+### 7 — JWT_SECRET with a hidden tab character
+The backend was receiving requests, the cookie was being set, but `/api/auth/me` returned 401 on every page load even with a valid cookie. Railway's environment variable editor had auto-inserted a tab character before `JWT_SECRET`, making the actual variable name `\tJWT_SECRET`. The server signed tokens with one key and verified with `undefined`. Deleting and retyping the variable name manually in Railway's dashboard fixed it.
+
+### 8 — Vite baking the wrong API URL at build time
+`VITE_API_URL` is inlined at build time — changing it in Vercel's environment variables has no effect until the project is redeployed. After deploying the backend to Railway the frontend still pointed at the old Render URL because the Vercel build hadn't been triggered. A forced redeploy on Vercel with the updated `VITE_API_URL` resolved it.
+
+---
+
 ## How the Backend Works
 
 * All content (100 items — 50 movies, 50 TV shows) is seeded from the TMDB API into MongoDB Atlas.
@@ -155,7 +423,8 @@ app/
 │   │   ├── config/
 │   │   │   └── db.js              # MongoDB connection
 │   │   ├── middleware/
-│   │   │   └── auth.js            # JWT verification middleware
+│   │   │   ├── auth.js            # JWT verification middleware
+│   │   │   └── errorHandler.js   # Global error handler
 │   │   ├── models/
 │   │   │   ├── Content.js         # Movie + TV show schema
 │   │   │   └── User.js            # User schema
@@ -181,16 +450,19 @@ app/
 │   │   └── Register.tsx
 │   ├── App.tsx
 │   └── main.tsx
+├── railway.json                   # Railway build/start config
 └── README.md
 ```
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | React 19, TypeScript 5, Vite 7, Tailwind CSS, shadcn/ui |
-| Backend | Node.js, Express 5 |
+| Backend | Node.js, Express 4 |
 | Database | MongoDB Atlas (Mongoose ODM) |
 | Auth | JWT + bcrypt, httpOnly cookies |
 | Data source | TMDB API v3 |
-| Deployment | Vercel (frontend) · Render (backend) |
+| Deployment | Vercel (frontend) · Railway (backend) |
