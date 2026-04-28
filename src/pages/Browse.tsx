@@ -67,7 +67,7 @@ export default function Browse() {
           !searchQuery || item.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesGenre =
           selectedGenres.length === 0 ||
-          selectedGenres.some((g) => item.genre.includes(g));
+          selectedGenres.every((g) => item.genre.includes(g));
         const matchesType =
           selectedType === 'all' ||
           (selectedType === 'movie' && item.type === 'movie') ||
